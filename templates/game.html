@@ -697,11 +697,13 @@ body::before {
 <script>
 // ─── State ────────────────────────────────────────────────────────────────────
 const ROOM_ID = '{{ room_id }}';
+  
+let myName  = sessionStorage.getItem('myName') || 'Spieler';
 const socket = io({
     query: {
-        name: sessionStorage.getItem('myName') || 'Spieler'
+        name: myName
     }
-});
+});  
 
 let myColor = sessionStorage.getItem('myColor') || 'white';
 let myName  = sessionStorage.getItem('myName')  || 'Spieler';
