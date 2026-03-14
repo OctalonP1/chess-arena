@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>♟ ChessArena – Online Schach</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --surface: #12121a;
+    --surface2: #1a1a26;
+    --border: #2a2a40;
+    --gold: #c9a84c;
+    --gold-light: #e8c97a;
+    --cream: #f5f0e8;
+    --muted: #6b6b8a;
+    --white: #ffffff;
+    --green: #4caf72;
+    --red: #e05555;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--cream);
+    font-family: 'DM Sans', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Animated background */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background:
+      radial-gradient(ellipse 80% 50% at 20% 20%, rgba(201,168,76,0.06) 0%, transparent 60%),
+      radial-gradient(ellipse 60% 40% at 80% 80%, rgba(76,175,114,0.04) 0%, transparent 50%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .chess-pattern {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    opacity: 0.015;
+    background-image:
+      repeating-conic-gradient(var(--gold) 0% 25%, transparent 0% 50%);
+    background-size: 60px 60px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .container {
+    position: relative;
+    z-index: 1;
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 40px 24px;
+  }
+
+  /* Header */
+  header {
+    text-align: center;
+    margin-bottom: 60px;
+  }
+
+  .logo {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(48px, 8vw, 80px);
+    font-weight: 900;
+    letter-spacing: -2px;
+    background: linear-gradient(135deg, var(--gold) 0%, var(--gold-light) 50%, var(--gold) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    line-height: 1;
+  }
+
+  .logo-pieces {
+    font-size: 0.6em;
+    margin-right: 12px;
+    filter: none;
+    -webkit-text-fill-color: var(--gold);
+  }
+
+  .tagline {
+    color: var(--muted);
+    font-size: 14px;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    margin-top: 12px;
+    font-family: 'DM Mono', monospace;
+  }
+
+  /* Cards */
+  .grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+    margin-bottom: 40px;
+  }
+
+  @media (max-width: 640px) { .grid { grid-template-columns: 1fr; } }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 32px;
+    transition: border-color 0.2s, transform 0.2s;
+  }
+
+  .card:hover { border-color: var(--gold); transform: translateY(-2px); }
+
+  .card-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--gold);
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .card-desc {
+    color: var(--muted);
+    font-size: 13px;
+    margin-bottom: 24px;
+    line-height: 1.6;
+  }
+
+  /* Form elements */
+  label {
+    display: block;
+    font-size: 11px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 6px;
+    font-family: 'DM Mono', monospace;
+  }
+
+  input[type="text"], select {
+    width: 100%;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px 14px;
+    color: var(--cream);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 15px;
+    margin-bottom: 16px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+
+  input[type="text"]:focus, select:focus { border-color: var(--gold); }
+  select option { background: var(--surface2); }
+
+  /* Buttons */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 13px 24px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    border: none;
+    transition: all 0.2s;
+    font-family: 'DM Sans', sans-serif;
+    width: 100%;
+  }
+
+  .btn-gold {
+    background: linear-gradient(135deg, var(--gold), var(--gold-light));
+    color: #1a1000;
+    font-weight: 700;
+  }
+
+  .btn-gold:hover { filter: brightness(1.1); transform: translateY(-1px); }
+
+  .btn-outline {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--cream);
+  }
+
+  .btn-outline:hover { border-color: var(--gold); color: var(--gold); }
+
+  /* Time control grid */
+  .tc-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+    margin-bottom: 16px;
+  }
+
+  .tc-btn {
+    padding: 8px 4px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: var(--surface2);
+    color: var(--muted);
+    font-size: 11px;
+    font-family: 'DM Mono', monospace;
+    cursor: pointer;
+    text-align: center;
+    transition: all 0.15s;
+  }
+
+  .tc-btn:hover, .tc-btn.active {
+    border-color: var(--gold);
+    color: var(--gold);
+    background: rgba(201,168,76,0.08);
+  }
+
+  /* Open games */
+  .open-games {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 32px;
+    margin-bottom: 32px;
+  }
+
+  .section-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 20px;
+    color: var(--gold);
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .game-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 16px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    margin-bottom: 8px;
+    transition: border-color 0.2s;
+  }
+
+  .game-item:hover { border-color: var(--gold); }
+
+  .game-info { font-size: 14px; }
+  .game-host { font-weight: 500; }
+  .game-tc { color: var(--muted); font-size: 12px; font-family: 'DM Mono', monospace; }
+
+  .btn-join {
+    padding: 8px 18px;
+    background: var(--green);
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 600;
+    transition: filter 0.2s;
+  }
+
+  .btn-join:hover { filter: brightness(1.1); }
+
+  .no-games { color: var(--muted); font-size: 14px; text-align: center; padding: 20px; }
+
+  /* Room join */
+  .room-join {
+    display: flex;
+    gap: 8px;
+  }
+
+  .room-join input { margin: 0; flex: 1; }
+  .room-join .btn { width: auto; padding: 12px 20px; }
+
+  /* Features bar */
+  .features {
+    display: flex;
+    justify-content: center;
+    gap: 32px;
+    margin-top: 48px;
+    flex-wrap: wrap;
+  }
+
+  .feature {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    color: var(--muted);
+  }
+
+  .feature-icon { color: var(--gold); font-size: 16px; }
+
+  .divider {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 20px 0;
+  }
+
+  .error-msg {
+    background: rgba(224,85,85,0.1);
+    border: 1px solid var(--red);
+    color: var(--red);
+    padding: 12px 16px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    font-size: 14px;
+  }
+
+  .badge {
+    display: inline-block;
+    background: rgba(201,168,76,0.15);
+    color: var(--gold);
+    border: 1px solid rgba(201,168,76,0.3);
+    border-radius: 20px;
+    padding: 2px 10px;
+    font-size: 11px;
+    font-family: 'DM Mono', monospace;
+    vertical-align: middle;
+    margin-left: 8px;
+  }
+</style>
+</head>
+<body>
+<div class="chess-pattern"></div>
+<div class="container">
+
+  <header>
+    <div class="logo"><span class="logo-pieces">♟</span>ChessArena</div>
+    <div class="tagline">Online Schach · Analyse · Live</div>
+  </header>
+
+  {% if error %}
+  <div class="error-msg">⚠ {{ error }}</div>
+  {% endif %}
+
+  <!-- Open Games -->
+  <div class="open-games">
+    <div class="section-title">♜ Offene Partien <span id="game-count" class="badge">0</span></div>
+    <div id="open-games-list"><div class="no-games">Keine offenen Partien – erstelle eine neue!</div></div>
+  </div>
+
+  <div class="grid">
+    <!-- Create Game -->
+    <div class="card">
+      <div class="card-title">♙ Neue Partie</div>
+      <div class="card-desc">Erstelle ein Spiel und warte auf einen Gegner oder teile den Raumcode.</div>
+
+      <label>Dein Name</label>
+      <input type="text" id="create-name" placeholder="Spielername eingeben..." maxlength="20">
+
+      <label>Zeitkontrolle</label>
+      <div class="tc-grid" id="tc-create">
+        {% for key, tc in time_controls.items() %}
+        <div class="tc-btn {% if key == 'blitz_5' %}active{% endif %}"
+             data-key="{{ key }}" onclick="selectTC('create', '{{ key }}', this)">
+          {{ tc.label }}
+        </div>
+        {% endfor %}
+      </div>
+
+      <input type="hidden" id="create-tc" value="blitz_5">
+      <button class="btn btn-gold" onclick="createGame()">⚑ Partie erstellen</button>
+    </div>
+
+    <!-- Quick Match + Join -->
+    <div class="card">
+      <div class="card-title">⚡ Schnellsuche</div>
+      <div class="card-desc">Finde sofort einen Gegner mit der gleichen Zeitkontrolle.</div>
+
+      <label>Dein Name</label>
+      <input type="text" id="quick-name" placeholder="Spielername eingeben..." maxlength="20">
+
+      <label>Zeitkontrolle</label>
+      <div class="tc-grid" id="tc-quick">
+        {% for key, tc in time_controls.items() %}
+        <div class="tc-btn {% if key == 'blitz_5' %}active{% endif %}"
+             data-key="{{ key }}" onclick="selectTC('quick', '{{ key }}', this)">
+          {{ tc.label }}
+        </div>
+        {% endfor %}
+      </div>
+      <input type="hidden" id="quick-tc" value="blitz_5">
+
+      <button class="btn btn-gold" onclick="quickMatch()" style="margin-bottom:16px">⚡ Jetzt spielen</button>
+
+      <hr class="divider">
+
+      <label>Raumcode eingeben</label>
+      <div class="room-join">
+        <input type="text" id="join-code" placeholder="z.B. a3f8c2b1" maxlength="8">
+        <button class="btn btn-outline" onclick="joinByCode()" style="width:auto;padding:12px 20px">Beitreten</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Features -->
+  <div class="features">
+    <div class="feature"><span class="feature-icon">♟</span> Legale Zugvalidierung</div>
+    <div class="feature"><span class="feature-icon">🔬</span> Stockfish Analyse</div>
+    <div class="feature"><span class="feature-icon">⏱</span> Blitz · Rapid · Klassisch</div>
+    <div class="feature"><span class="feature-icon">💬</span> Live Chat</div>
+    <div class="feature"><span class="feature-icon">📹</span> Webcam</div>
+    <div class="feature"><span class="feature-icon">📋</span> PGN Export</div>
+  </div>
+
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.2/socket.io.min.js"></script>
+<script>
+const socket = io();
+let selectedName = '';
+
+// Fetch open games periodically
+function loadOpenGames() {
+  fetch('/api/games').then(r => r.json()).then(games => {
+    const list = document.getElementById('open-games-list');
+    const count = document.getElementById('game-count');
+    count.textContent = games.length;
+    if (!games.length) {
+      list.innerHTML = '<div class="no-games">Keine offenen Partien – erstelle eine neue!</div>';
+      return;
+    }
+    list.innerHTML = games.map(g => `
+      <div class="game-item">
+        <div class="game-info">
+          <div class="game-host">♙ ${g.host}</div>
+          <div class="game-tc">${g.time_control}</div>
+        </div>
+        <button class="btn-join" onclick="joinGame('${g.room_id}')">Beitreten →</button>
+      </div>
+    `).join('');
+  }).catch(() => {});
+}
+loadOpenGames();
+setInterval(loadOpenGames, 3000);
+
+function selectTC(type, key, el) {
+  document.querySelectorAll(`#tc-${type} .tc-btn`).forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById(`${type}-tc`).value = key;
+}
+
+function getName(inputId) {
+  const n = document.getElementById(inputId).value.trim();
+  if (!n) { alert('Bitte einen Namen eingeben!'); return null; }
+  return n;
+}
+
+function createGame() {
+  const name = getName('create-name');
+  if (!name) return;
+  const tc = document.getElementById('create-tc').value;
+  socket.emit('create_game', { name, time_control: tc });
+}
+
+function quickMatch() {
+  const name = getName('quick-name');
+  if (!name) return;
+  const tc = document.getElementById('quick-tc').value;
+  socket.emit('quick_match', { name, time_control: tc });
+}
+
+function joinByCode() {
+  const code = document.getElementById('join-code').value.trim();
+  if (!code) { alert('Bitte Raumcode eingeben!'); return; }
+  const name = document.getElementById('quick-name').value.trim() ||
+               document.getElementById('create-name').value.trim() || 'Spieler';
+  socket.emit('join_game', { room_id: code, name });
+}
+
+function joinGame(roomId) {
+  const name = document.getElementById('quick-name').value.trim() ||
+               document.getElementById('create-name').value.trim() || 'Spieler';
+  if (!name) { alert('Bitte erst einen Namen eingeben!'); return; }
+  socket.emit('join_game', { room_id: roomId, name });
+}
+
+socket.on('game_created', data => {
+  sessionStorage.setItem('myColor', data.color);
+  sessionStorage.setItem('myName', data.name);
+  window.location.href = `/game/${data.room_id}`;
+});
+
+socket.on('game_joined', data => {
+  sessionStorage.setItem('myColor', data.color);
+  sessionStorage.setItem('myName', data.name);
+  window.location.href = `/game/${data.room_id}`;
+});
+
+socket.on('error', data => alert('Fehler: ' + data.message));
+</script>
+</body>
+</html>
