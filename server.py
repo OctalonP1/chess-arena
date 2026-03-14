@@ -204,7 +204,19 @@ def list_games():
 
 @socketio.on('connect')
 def on_connect():
-    logger.info(f"Client connected: {request.sid}")
+    name = request.args.get("name")
+    logger.info(f"Client connected: {request.sid} ({name})")
+
+    if not name:
+        return
+
+    for room_id, game in games.items():
+        for sid, player in list(game.players.items()):
+            if player["name"] == name:
+                game.players[request.sid] = player
+                del game.players[sid]
+                join_room(room_id)
+                logger.info(f"{name} reconnected to game {room_id}")
 
 @socketio.on('disconnect')
 def on_disconnect():
