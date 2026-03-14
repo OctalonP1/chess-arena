@@ -1217,7 +1217,6 @@ async function toggleWebcam() {
 
 // ─── Init ─────────────────────────────────────────────────────────────────────
 drawBoard();
-socket.emit('join_room_reconnect', { room_id: ROOM_ID });
 
 // Join the socket room
 socket.on('connect', () => {
