@@ -566,7 +566,7 @@ body::before {
   <!-- Top Bar -->
   <div class="topbar">
     <div class="topbar-logo">♟ ChessArena</div>
-    <div class="room-code">Raum: <span id="room-id-display" onclick="copyRoomCode()" title="Kopieren">{{ room_id }}</span></div>
+    <div class="room-code">Raum: <span id="room-id-display" onClick="copyRoomCode()" title="Kopieren">{{ room_id }}</span></div>
     <div id="game-status" style="font-size:13px;color:var(--muted)">Warte auf Gegner...</div>
   </div>
 
@@ -613,15 +613,15 @@ body::before {
         <div class="spinner"></div>
         <div class="waiting-text">Warte auf Gegner...</div>
         <div style="font-size:13px;color:var(--muted)">Teile den Raumcode:</div>
-        <div class="room-share" onclick="copyRoomCode()" id="room-share-code">{{ room_id }}</div>
+        <div class="room-share" onClick="copyRoomCode()" id="room-share-code">{{ room_id }}</div>
         <div style="font-size:11px;color:var(--muted)">Klicken zum Kopieren</div>
       </div>
       <div class="gameover-overlay" id="gameover-overlay">
         <div class="gameover-title" id="gameover-title">Spielende</div>
         <div class="gameover-result" id="gameover-result"></div>
         <div style="display:flex;gap:8px;margin-top:8px">
-          <button class="action-btn btn-pgn" onclick="downloadPGN()">PGN laden</button>
-          <button class="action-btn btn-home" onclick="window.location.href='/'">Lobby</button>
+          <button class="action-btn btn-pgn" onClick="downloadPGN()">PGN laden</button>
+          <button class="action-btn btn-home" onClick="window.location.href='/'">Lobby</button>
         </div>
       </div>
     </div>
@@ -665,17 +665,17 @@ body::before {
       <div class="chat-input-row">
         <input type="text" id="chat-input" placeholder="Nachricht..." maxlength="200"
                onkeydown="if(event.key==='Enter') sendChat()">
-        <button class="chat-send" onclick="sendChat()">↑</button>
+        <button class="chat-send" onClick="sendChat()">↑</button>
       </div>
     </div>
 
     <!-- Action Buttons -->
     <div class="action-btns">
-      <button class="action-btn btn-resign" onclick="resign()">Aufgeben</button>
-      <button class="action-btn btn-draw" onclick="offerDraw()">Remis</button>
-      <button class="action-btn btn-cam" onclick="toggleWebcam()">📷 Cam</button>
-      <button class="action-btn btn-pgn" onclick="downloadPGN()">PGN</button>
-      <button class="action-btn btn-home" onclick="window.location.href='/'">← Home</button>
+      <button class="action-btn btn-resign" onClick="resign()">Aufgeben</button>
+      <button class="action-btn btn-draw" onClick="offerDraw()">Remis</button>
+      <button class="action-btn btn-cam" onClick="toggleWebcam()">📷 Cam</button>
+      <button class="action-btn btn-pgn" onClick="downloadPGN()">PGN</button>
+      <button class="action-btn btn-home" onClick="window.location.href='/'">← Home</button>
     </div>
 
   </div>
@@ -698,15 +698,13 @@ body::before {
 // ─── State ────────────────────────────────────────────────────────────────────
 const ROOM_ID = '{{ room_id }}';
   
-let myName  = sessionStorage.getItem('myName') || 'Spieler';
+let myColor = sessionStorage.getItem('myColor') || 'white';
+let myName  = sessionStorage.getItem('myName')  || 'Spieler';
 const socket = io({
     query: {
         name: myName
     }
-});  
-
-let myColor = sessionStorage.getItem('myColor') || 'white';
-let myName  = sessionStorage.getItem('myName')  || 'Spieler';
+});
 let gameActive = false;
 let gameOver = false;
 let currentFen = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
