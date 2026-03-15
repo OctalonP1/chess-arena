@@ -356,6 +356,7 @@ def on_make_move(data):
             'move_number': len(game.move_history),
             'player': player['name'],
             'color': player['color'],
+            'turn': 'black' if player['color'] == 'white' else 'white',
             'pgn': game.get_pgn(),
         }
 
